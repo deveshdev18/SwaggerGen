@@ -1,0 +1,21 @@
+User Story: BP user to add short cipher
+As an BP user I must be able to add short cipher via Web and App
+
+Acceptance Criteria:
+• Upon BP user’s successful login, he can see the landing page.
+• The system allows BP user to access Mobility Services under Service Management option.
+• The system should display the option for BP choose "short cipher." Option.
+• The system should display all the “short cipher” that was created early by BP.
+• The system should provide the option to create the new short cipher by clicking “Add New Short cipher” option.
+• Upon clicking “Add New Short cipher” option, BP user will get input field for adding short cipher.
+• System will provide the option to “Select Number” when BP user clicks Next button.
+• The system should allow the user to enter only 4 to 6 digit numbers.
+• The system should never allow the BP user to choose any restricted numbers.(Business rule Applies)
+• The system should allow the BP user to choose only valid calling number.
+• System validates the inputs and shows error in applicable cases.
+• The system should allow the BP user to see "Add another short cipher" option.
+• BP user should click and add more short cipher.
+• System will provide the option to see the summary page, after BP users successful given his input on “Select Number” field and clicks Next button.
+• BP user can confirm and submit his request after verifying his details in summary page.
+• Once the short cipher is created, it will be displayed on the list.
+• The latest updates should be captured in the backend system along with user information who performed the action and the timestamp.

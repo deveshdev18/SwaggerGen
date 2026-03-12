@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+github-copilot-sdk
+python-multipart
+streamlit
+requests
