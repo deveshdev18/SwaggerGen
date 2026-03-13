@@ -61,7 +61,7 @@ copilot auth login
 Follow the browser prompt to authenticate with your GitHub account.
 Make sure your account has an active **GitHub Copilot Pro** plan.
 
-### 4. Python 3.11 or 3.12
+### 4. Python 3.11 or 3.12 ensure , .venv is present
 Python 3.14 has known SSL compatibility issues — stick to 3.11 or 3.12.
 
 ---
