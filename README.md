@@ -6,18 +6,16 @@ Generate **OpenAPI/Swagger YAML files automatically from user stories** using Gi
 
 ## 🧠 How It Works
 
-This tool uses **few-shot learning** — you provide example pairs of (user story + swagger YAML), and the AI learns your structure and generates a matching Swagger file for any new user story.
+Provide example pairs of (user story + swagger YAML) as learning references. The Copilot agent reads them from disk, learns the structure, and generates a matching Swagger file for any new user story.
 
 ```
-You upload examples (user story + swagger YAML)
+User uploads examples + new user story via Streamlit
             ↓
-You upload a new user story
+FastAPI saves files to learning/ and input/ folders
             ↓
-FastAPI backend builds a few-shot prompt
+Copilot agent reads files, generates YAML, saves to output/
             ↓
-GitHub Copilot CLI processes it (Claude Sonnet / GPT-4.1 etc.)
-            ↓
-Generated Swagger YAML returned & ready to download
+User downloads the generated Swagger YAML
 ```
 
 ---
@@ -25,19 +23,15 @@ Generated Swagger YAML returned & ready to download
 ## 🗂️ Project Structure
 
 ```
-swagger-gen/
-│
+SwaggerGen/
 ├── backend/
-│   └── main.py              # FastAPI app — all endpoints + Copilot SDK logic
-│
+│   └── main.py              # FastAPI app + Copilot SDK logic
 ├── frontend/
 │   └── app.py               # Streamlit UI
-│
-├── learning/
-│   ├── example_story_1.txt  # Sample user story (ready to use for testing)
-│   └── example_swagger_1.yaml # Corresponding Swagger YAML
-│
-├── requirements.txt         # All dependencies
+├── learning/                # Example pairs (persisted across runs)
+├── input/                   # New user story (cleared each run)
+├── output/                  # Generated YAML (cleared each run)
+├── requirements.txt
 └── README.md
 ```
 
@@ -46,7 +40,6 @@ swagger-gen/
 ## ⚙️ Prerequisites
 
 ### 1. Node.js
-Required to install GitHub Copilot CLI.
 Download from: https://nodejs.org
 
 ### 2. GitHub Copilot CLI
@@ -54,50 +47,58 @@ Download from: https://nodejs.org
 npm install -g @github/copilot
 ```
 
-### 3. Authenticate Copilot CLI
+### 3. Authenticate
 ```bash
 copilot auth login
 ```
-Follow the browser prompt to authenticate with your GitHub account.
-Make sure your account has an active **GitHub Copilot Pro** plan.
+Requires an active **GitHub Copilot Pro** plan.
 
-### 4. Python 3.11 or 3.12 ensure , .venv is present
-Python 3.14 has known SSL compatibility issues — stick to 3.11 or 3.12.
+### 4. Python 3.11 or 3.12
+Ensure a `.venv` is present in your project root.
 
 ---
 
 ## 🚀 Setup & Running
 
-### Step 1 — Install dependencies
+### Step 1 — Clone and activate virtual environment
+```bash
+git clone <your-repo-url>
+cd SwaggerGen
+
+# Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+
+```
+
+### Step 2 — Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 2 — Start the backend
+### Step 3 — Start the backend
 ```bash
 cd backend
 uvicorn main:app --reload --port 8000 --timeout-keep-alive 600
 ```
-Backend runs at: `http://localhost:8000`
-API docs at: `http://localhost:8000/docs`
 
-### Step 3 — Start the frontend
+### Step 4 — Start the frontend
 ```bash
 cd frontend
 streamlit run app.py
 ```
-Frontend opens at: `http://localhost:8501`
 
 ---
 
 ## 🖥️ How to Use
 
-1. **Check Copilot Status** — click the status button to confirm Copilot CLI is authenticated
-2. **Select a model** — Claude Sonnet 4.5 recommended for large files
+1. **Check Copilot Status** — confirm CLI is authenticated
+2. **Select a model** — Claude Sonnet 4.5 recommended
 3. **Upload learning examples** — 1 to 3 pairs of (user story + swagger YAML)
-4. **Upload your new user story** — the one you want to convert
-5. **Click Generate** — wait for the AI to process (large files may take 2-5 minutes)
+4. **Upload your new user story**
+5. **Click Generate** — may take 2–5 minutes for large files
 6. **Download** the generated Swagger YAML
+
+> If you've uploaded examples in a previous run, you can skip step 3 — they'll be reused automatically.
 
 ---
 
@@ -106,7 +107,7 @@ Frontend opens at: `http://localhost:8501`
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/` | Health check |
-| GET | `/models` | List available Copilot models |
+| GET | `/models` | List available models |
 | POST | `/validate-pat` | Check Copilot CLI auth status |
 | POST | `/generate` | Generate Swagger YAML |
 
@@ -116,5 +117,5 @@ Frontend opens at: `http://localhost:8501`
 
 | Model ID | Description |
 |----------|-------------|
-| `claude-sonnet-4.5` | ✅ Recommended — best for large files |
-| `gpt-4o` | Fast and capable |
+| `claude-sonnet-4.5` | ✅ Recommended |
+| `gpt-4.1` | Great for code/YAML generation |
