@@ -1,0 +1,1783 @@
+openapi: 3.0.0
+info:
+  title: B2B_LoginMgmt_v1
+  description: |
+    Provides Login Management Services with OTP verification
+  version: 1.0.0
+  contact:
+    name: dev
+    email: dev@example.com
+    
+servers:
+  - url: 'https://apidev/b2b'
+    description: DEV
+  - url: 'https://apisit/b2b'
+    description: SIT
+  - url: 'https://apipreprod/b2b'
+    description: PREPROD
+  - url: 'https://api/b2b'
+    description: PROD
+    
+paths:
+  /user-mgmt/v1/validate-credentials:
+    post:
+      summary: Validate User Credentials
+      operationId: validateCredentials
+      description: |
+        **Summary:**
+        
+        This API validates the username and password entered by the admin user during login. Performs client and server side validation and checks if the account is active, suspended, or deleted.
+        
+        **DB Tables:**
+        - USER_DETAILS
+        - USER_STATUS
+      parameters:
+        - $ref: '#/components/parameters/Correlation-Id'
+        - $ref: '#/components/parameters/Source'
+        - $ref: '#/components/parameters/Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateCredentialsRequest'
+            examples:
+              Valid Credentials:
+                value:
+                  version: v1
+                  journey: LOGIN
+                  operation: VALIDATE_CREDENTIALS
+                  language: en
+                  userName: adminuser123
+                  password: SecurePassword@123
+              Valid Credentials Admin:
+                value:
+                  version: v1
+                  journey: LOGIN
+                  operation: VALIDATE_CREDENTIALS
+                  language: en
+                  userName: admin@example.com
+                  password: Admin@9876
+      responses:
+        '200':
+          $ref: '#/components/responses/ValidateCredentialsResponse'
+        '400':
+          $ref: '#/components/responses/400-Error-Response'
+        '401':
+          $ref: '#/components/responses/401-Error-Response'
+        '403':
+          $ref: '#/components/responses/403-Error-Response'
+        '460':
+          $ref: '#/components/responses/460-Error-Response'
+        '460_1':
+          $ref: '#/components/responses/460_1-Error-Response'
+        '460_2':
+          $ref: '#/components/responses/460_2-Error-Response'
+        '460_3':
+          $ref: '#/components/responses/460_3-Error-Response'
+        '500':
+          $ref: '#/components/responses/500-Error-Response'
+      tags:
+        - User Management
+
+  /user-mgmt/v1/account-status/get:
+    post:
+      summary: Get Account Status
+      operationId: getAccountStatus
+      description: |
+        **Summary:**
+
+        This API retrieves the current status of the user account to check if it is active, suspended, or deleted. Used during login validation flow.
+
+        **DB Tables:**
+        - USER_DETAILS
+        - USER_STATUS
+      parameters:
+        - $ref: '#/components/parameters/Correlation-Id'
+        - $ref: '#/components/parameters/Source'
+        - $ref: '#/components/parameters/Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountStatusRequest'
+            examples:
+              Check Account Status:
+                value:
+                  version: v1
+                  userName: adminuser123
+      responses:
+        '200':
+          $ref: '#/components/responses/AccountStatusResponse'
+        '400':
+          $ref: '#/components/responses/400-Error-Response'
+        '401':
+          $ref: '#/components/responses/401-Error-Response'
+        '404':
+          $ref: '#/components/responses/404-Error-Response'
+        '500':
+          $ref: '#/components/responses/500-Error-Response'
+      tags:
+        - User Management
+
+  /user-mgmt/v1/lock-account:
+    post:
+      summary: Lock User Account
+      operationId: lockAccount
+      description: |
+        **Summary:**
+
+        This API locks the user account after 3 failed login attempts (incorrect password or OTP). The account remains locked until manually unlocked by administrator.
+
+        **DB Tables:**
+        - USER_DETAILS
+        - USER_STATUS
+        - ACCOUNT_LOCK_LOG
+      parameters:
+        - $ref: '#/components/parameters/Correlation-Id'
+        - $ref: '#/components/parameters/Source'
+        - $ref: '#/components/parameters/Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockAccountRequest'
+            examples:
+              Lock Account After Failed Attempts:
+                value:
+                  version: v1
+                  userName: adminuser123
+                  reason: FAILED_LOGIN_ATTEMPTS
+                  failedAttempts: '3'
+      responses:
+        '200':
+          $ref: '#/components/responses/LockAccountResponse'
+        '400':
+          $ref: '#/components/responses/400-Error-Response'
+        '401':
+          $ref: '#/components/responses/401-Error-Response'
+        '404':
+          $ref: '#/components/responses/404-Error-Response'
+        '500':
+          $ref: '#/components/responses/500-Error-Response'
+      tags:
+        - User Management
+
+  /otp/v1/generate:
+    post:
+      summary: Generate OTP
+      operationId: generateOtp
+      description: |
+        **Summary:**
+
+        This API generates a 4-digit OTP for the given user and stores it in the database. The OTP is valid for a configurable time period and is sent to the user's registered mobile number via Notification service.
+
+        **DB Tables:**
+        - OTP_DETAILS
+      parameters:
+        - $ref: '#/components/parameters/Correlation-Id'
+        - $ref: '#/components/parameters/Source'
+        - $ref: '#/components/parameters/Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateOtpRequest'
+            examples:
+              Generate OTP for Login:
+                value:
+                  version: v1
+                  journey: LOGIN
+                  operation: GENERATE_OTP
+                  language: en
+                  userName: adminuser123
+                  purpose: LOGIN
+      responses:
+        '200':
+          $ref: '#/components/responses/GenerateOtpResponse'
+        '400':
+          $ref: '#/components/responses/400-Error-Response'
+        '401':
+          $ref: '#/components/responses/401-Error-Response'
+        '404':
+          $ref: '#/components/responses/404-Error-Response'
+        '460':
+          $ref: '#/components/responses/460-Error-Response'
+        '500':
+          $ref: '#/components/responses/500-Error-Response'
+      tags:
+        - OTP Management
+
+  /otp/v1/validate:
+    post:
+      summary: Validate OTP
+      operationId: validateOtp
+      description: |
+        **Summary:**
+
+        This API validates the OTP entered by the user against the stored OTP in the database. It checks for correctness and timeliness (expiry). Tracks failed attempts and triggers account lock after 3 failed attempts.
+
+        **DB Tables:**
+        - OTP_DETAILS
+        - OTP_VALIDATION_LOG
+      parameters:
+        - $ref: '#/components/parameters/Correlation-Id'
+        - $ref: '#/components/parameters/Source'
+        - $ref: '#/components/parameters/Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateOtpRequest'
+            examples:
+              Validate OTP:
+                value:
+                  version: v1
+                  journey: LOGIN
+                  operation: VALIDATE_OTP
+                  language: en
+                  userName: adminuser123
+                  otp: '1234'
+      responses:
+        '200':
+          $ref: '#/components/responses/ValidateOtpResponse'
+        '400':
+          $ref: '#/components/responses/400-Error-Response'
+        '401':
+          $ref: '#/components/responses/401-Error-Response'
+        '460':
+          $ref: '#/components/responses/460-Error-Response'
+        '460_1':
+          $ref: '#/components/responses/460_1-Error-Response'
+        '460_2':
+          $ref: '#/components/responses/460_2-Error-Response'
+        '500':
+          $ref: '#/components/responses/500-Error-Response'
+      tags:
+        - OTP Management
+
+  /otp/v1/resend:
+    post:
+      summary: Resend OTP
+      operationId: resendOtp
+      description: |
+        **Summary:**
+
+        This API allows the user to request a new OTP after waiting for the configured time period (60 seconds). The system implements security measures to prevent abuse by limiting the maximum resend attempts to 3.
+
+        **DB Tables:**
+        - OTP_DETAILS
+        - OTP_RESEND_LOG
+      parameters:
+        - $ref: '#/components/parameters/Correlation-Id'
+        - $ref: '#/components/parameters/Source'
+        - $ref: '#/components/parameters/Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendOtpRequest'
+            examples:
+              Resend OTP:
+                value:
+                  version: v1
+                  journey: LOGIN
+                  operation: RESEND_OTP
+                  language: en
+                  userName: adminuser123
+      responses:
+        '200':
+          $ref: '#/components/responses/ResendOtpResponse'
+        '400':
+          $ref: '#/components/responses/400-Error-Response'
+        '401':
+          $ref: '#/components/responses/401-Error-Response'
+        '460':
+          $ref: '#/components/responses/460-Error-Response'
+        '460_1':
+          $ref: '#/components/responses/460_1-Error-Response'
+        '500':
+          $ref: '#/components/responses/500-Error-Response'
+      tags:
+        - OTP Management
+
+  /notification/v1/send-sms:
+    post:
+      summary: Send SMS Notification
+      operationId: sendSmsNotification
+      description: |
+        **Summary:**
+
+        This API sends SMS notification to the user's registered mobile number. Used to deliver OTP during login process. Integrates with external SMS Gateway.
+
+        **DB Tables:**
+        - NOTIFICATION_LOG
+      parameters:
+        - $ref: '#/components/parameters/Correlation-Id'
+        - $ref: '#/components/parameters/Source'
+        - $ref: '#/components/parameters/Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendSmsRequest'
+            examples:
+              Send OTP SMS:
+                value:
+                  version: v1
+                  journey: LOGIN
+                  operation: SEND_OTP_SMS
+                  language: en
+                  msisdn: '9876543210'
+                  message: Your OTP for login is 1234. Valid for 5 minutes.
+                  templateId: OTP_LOGIN_TEMPLATE
+      responses:
+        '200':
+          $ref: '#/components/responses/SendSmsResponse'
+        '400':
+          $ref: '#/components/responses/400-Error-Response'
+        '401':
+          $ref: '#/components/responses/401-Error-Response'
+        '460':
+          $ref: '#/components/responses/460-Error-Response'
+        '500':
+          $ref: '#/components/responses/500-Error-Response'
+      tags:
+        - Notification Management
+
+  /login/v1/authenticate:
+    post:
+      summary: Complete Login Authentication
+      operationId: authenticateUser
+      description: |
+        **Summary:**
+
+        This is the orchestration API that coordinates the complete login flow including credential validation, OTP generation, OTP validation, and account status checks. Returns authentication token upon successful login.
+
+        **DB Tables:**
+        - USER_SESSION
+        - LOGIN_AUDIT_LOG
+      parameters:
+        - $ref: '#/components/parameters/Correlation-Id'
+        - $ref: '#/components/parameters/Source'
+        - $ref: '#/components/parameters/Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticateRequest'
+            examples:
+              Login with OTP:
+                value:
+                  version: v1
+                  journey: LOGIN
+                  operation: AUTHENTICATE
+                  language: en
+                  userName: adminuser123
+                  password: SecurePassword@123
+                  otp: '1234'
+      responses:
+        '200':
+          $ref: '#/components/responses/AuthenticateResponse'
+        '400':
+          $ref: '#/components/responses/400-Error-Response'
+        '401':
+          $ref: '#/components/responses/401-Error-Response'
+        '403':
+          $ref: '#/components/responses/403-Error-Response'
+        '460':
+          $ref: '#/components/responses/460-Error-Response'
+        '460_1':
+          $ref: '#/components/responses/460_1-Error-Response'
+        '460_2':
+          $ref: '#/components/responses/460_2-Error-Response'
+        '460_3':
+          $ref: '#/components/responses/460_3-Error-Response'
+        '500':
+          $ref: '#/components/responses/500-Error-Response'
+      tags:
+        - Login Orchestration
+
+  /password-mgmt/v1/validate-username:
+    post:
+      summary: Validate Username for Password Reset
+      operationId: validateUsername
+      description: |
+        **Summary:**
+        
+        This API validates if the provided username exists in the system during the forgot password flow. Used to initiate the password reset process.
+        
+        **DB Tables:**
+        - USER_DETAILS
+      parameters:
+        - $ref: '#/components/parameters/Correlation-Id'
+        - $ref: '#/components/parameters/Source'
+        - $ref: '#/components/parameters/Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateUsernameRequest'
+            examples:
+              Valid Username:
+                value:
+                  version: v1
+                  journey: FORGOT_PASSWORD
+                  operation: VALIDATE_USERNAME
+                  language: en
+                  userName: adminuser123
+      responses:
+        '200':
+          $ref: '#/components/responses/ValidateUsernameResponse'
+        '400':
+          $ref: '#/components/responses/400-Error-Response'
+        '404':
+          $ref: '#/components/responses/404-Error-Response'
+        '460':
+          $ref: '#/components/responses/460-Error-Response'
+        '500':
+          $ref: '#/components/responses/500-Error-Response'
+      tags:
+        - Password Management
+
+  /password-mgmt/v1/reset:
+    post:
+      summary: Reset Password
+      operationId: resetPassword
+      description: |
+        **Summary:**
+        
+        This API allows the admin user to reset their password after successful OTP verification. The new password is validated against password policy requirements including minimum length and complexity. The system confirms that new password matches confirm password before updating.
+        
+        **DB Tables:**
+        - USER_DETAILS
+        - PASSWORD_HISTORY
+        - PASSWORD_RESET_LOG
+      parameters:
+        - $ref: '#/components/parameters/Correlation-Id'
+        - $ref: '#/components/parameters/Source'
+        - $ref: '#/components/parameters/Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+            examples:
+              Reset Password Success:
+                value:
+                  version: v1
+                  journey: FORGOT_PASSWORD
+                  operation: RESET_PASSWORD
+                  language: en
+                  userName: adminuser123
+                  otp: '1234'
+                  newPassword: NewSecurePass@456
+                  confirmPassword: NewSecurePass@456
+      responses:
+        '200':
+          $ref: '#/components/responses/ResetPasswordResponse'
+        '400':
+          $ref: '#/components/responses/400-Error-Response'
+        '460':
+          $ref: '#/components/responses/460-Error-Response'
+        '460_1':
+          $ref: '#/components/responses/460_1-Error-Response'
+        '460_2':
+          $ref: '#/components/responses/460_2-Error-Response'
+        '460_3':
+          $ref: '#/components/responses/460_3-Error-Response'
+        '460_4':
+          $ref: '#/components/responses/460_4-Error-Response'
+        '500':
+          $ref: '#/components/responses/500-Error-Response'
+      tags:
+        - Password Management
+
+components:
+  schemas:
+    Status:
+      type: object
+      description: Model Represents Status
+      properties:
+        code:
+          type: string
+          description: Possible status code / error codes
+          enum:
+            - API-000
+            - API-400
+            - API-400_1
+            - API-400_2
+            - API-401
+            - API-403
+            - API-404
+            - API-460
+            - API-460_1
+            - API-460_2
+            - API-460_3
+            - API-460_4
+            - API-500
+          example: API-400
+        message:
+          type: string
+          description: title of error message
+          example: Invalid input
+
+    ValidateCredentialsRequest:
+      title: ValidateCredentialsRequest
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+          default: v1
+          description: This specifies which version of configuration to be used.
+        journey:
+          type: string
+          example: LOGIN
+          description: This defines the JOURNEY of the use case.
+        operation:
+          type: string
+          example: VALIDATE_CREDENTIALS
+          description: This defines the operation flow of use case.
+        language:
+          type: string
+          example: en
+          default: en
+          enum:
+            - en
+            - es
+          description: Specifies the preferred language by caller
+        userName:
+          type: string
+          example: adminuser123
+          description: Username entered by the admin user
+        password:
+          type: string
+          example: SecurePassword@123
+          description: Password entered by the admin user
+      required:
+        - version
+        - journey
+        - operation
+        - userName
+        - password
+      description: Model represents credentials validation request
+
+    ValidateCredentialsData:
+      title: ValidateCredentialsData
+      type: object
+      properties:
+        isValid:
+          type: string
+          description: Indicates if credentials are valid
+          enum:
+            - 'true'
+            - 'false'
+          example: 'true'
+        userId:
+          type: string
+          description: User identifier
+          example: user-12345
+        msisdn:
+          type: string
+          description: Registered mobile number for OTP delivery
+          example: '9876543210'
+
+    ValidateCredentialsResponseSchema:
+      title: ValidateCredentialsResponseSchema
+      type: object
+      description: Validate Credentials response
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          $ref: '#/components/schemas/ValidateCredentialsData'
+
+    AccountStatusRequest:
+      title: AccountStatusRequest
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+          default: v1
+          description: This specifies which version of configuration to be used.
+        userName:
+          type: string
+          example: adminuser123
+          description: Username to check account status
+      required:
+        - version
+        - userName
+      description: Model represents account status request
+
+    AccountStatusData:
+      title: AccountStatusData
+      type: object
+      properties:
+        status:
+          type: string
+          description: Current account status
+          enum:
+            - ACTIVE
+            - SUSPENDED
+            - DELETED
+            - LOCKED
+          example: ACTIVE
+        userId:
+          type: string
+          description: User identifier
+          example: user-12345
+
+    AccountStatusResponseSchema:
+      title: AccountStatusResponseSchema
+      type: object
+      description: Account Status response
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          $ref: '#/components/schemas/AccountStatusData'
+
+    LockAccountRequest:
+      title: LockAccountRequest
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+          default: v1
+          description: This specifies which version of configuration to be used.
+        userName:
+          type: string
+          example: adminuser123
+          description: Username to lock
+        reason:
+          type: string
+          example: FAILED_LOGIN_ATTEMPTS
+          enum:
+            - FAILED_LOGIN_ATTEMPTS
+            - FAILED_OTP_ATTEMPTS
+            - SECURITY_VIOLATION
+          description: Reason for account lock
+        failedAttempts:
+          type: string
+          example: '3'
+          description: Number of failed attempts
+      required:
+        - version
+        - userName
+        - reason
+        - failedAttempts
+      description: Model represents lock account request
+
+    LockAccountData:
+      title: LockAccountData
+      type: object
+      properties:
+        accountLocked:
+          type: string
+          description: Indicates if account is locked
+          enum:
+            - 'true'
+            - 'false'
+          example: 'true'
+        lockedUntil:
+          type: string
+          format: date-time
+          description: Timestamp until which account is locked
+          example: '2026-04-01T12:00:00Z'
+
+    LockAccountResponseSchema:
+      title: LockAccountResponseSchema
+      type: object
+      description: Lock Account response
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          $ref: '#/components/schemas/LockAccountData'
+
+    GenerateOtpRequest:
+      title: GenerateOtpRequest
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+          default: v1
+          description: This specifies which version of configuration to be used.
+        journey:
+          type: string
+          example: LOGIN
+          description: This defines the JOURNEY of the use case.
+        operation:
+          type: string
+          example: GENERATE_OTP
+          description: This defines the operation flow of use case.
+        language:
+          type: string
+          example: en
+          default: en
+          enum:
+            - en
+            - es
+          description: Specifies the preferred language by caller
+        userName:
+          type: string
+          example: adminuser123
+          description: Username for which OTP needs to be generated
+        purpose:
+          type: string
+          example: LOGIN
+          enum:
+            - LOGIN
+            - TRANSACTION
+            - RESET_PASSWORD
+          description: Purpose of OTP generation
+      required:
+        - version
+        - journey
+        - operation
+        - userName
+        - purpose
+      description: Model represents OTP generation request
+
+    GenerateOtpData:
+      title: GenerateOtpData
+      type: object
+      properties:
+        otpGenerated:
+          type: string
+          description: Indicates if OTP was generated successfully
+          enum:
+            - 'true'
+            - 'false'
+          example: 'true'
+        otpId:
+          type: string
+          description: Unique identifier for the OTP
+          example: otp-12345
+        expiryTime:
+          type: string
+          description: OTP expiry time in seconds
+          example: '300'
+
+    GenerateOtpResponseSchema:
+      title: GenerateOtpResponseSchema
+      type: object
+      description: Generate OTP response
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          $ref: '#/components/schemas/GenerateOtpData'
+
+    ValidateOtpRequest:
+      title: ValidateOtpRequest
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+          default: v1
+          description: This specifies which version of configuration to be used.
+        journey:
+          type: string
+          example: LOGIN
+          description: This defines the JOURNEY of the use case.
+        operation:
+          type: string
+          example: VALIDATE_OTP
+          description: This defines the operation flow of use case.
+        language:
+          type: string
+          example: en
+          default: en
+          enum:
+            - en
+            - es
+          description: Specifies the preferred language by caller
+        userName:
+          type: string
+          example: adminuser123
+          description: Username for which OTP needs to be validated
+        otp:
+          type: string
+          example: '1234'
+          description: 4-digit OTP entered by user
+      required:
+        - version
+        - journey
+        - operation
+        - userName
+        - otp
+      description: Model represents OTP validation request
+
+    ValidateOtpData:
+      title: ValidateOtpData
+      type: object
+      properties:
+        isValid:
+          type: string
+          description: Indicates if OTP is valid
+          enum:
+            - 'true'
+            - 'false'
+          example: 'true'
+        failedAttempts:
+          type: string
+          description: Number of failed OTP validation attempts
+          example: '0'
+        remainingAttempts:
+          type: string
+          description: Number of remaining attempts before account lock
+          example: '3'
+
+    ValidateOtpResponseSchema:
+      title: ValidateOtpResponseSchema
+      type: object
+      description: Validate OTP response
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          $ref: '#/components/schemas/ValidateOtpData'
+
+    ResendOtpRequest:
+      title: ResendOtpRequest
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+          default: v1
+          description: This specifies which version of configuration to be used.
+        journey:
+          type: string
+          example: LOGIN
+          description: This defines the JOURNEY of the use case.
+        operation:
+          type: string
+          example: RESEND_OTP
+          description: This defines the operation flow of use case.
+        language:
+          type: string
+          example: en
+          default: en
+          enum:
+            - en
+            - es
+          description: Specifies the preferred language by caller
+        userName:
+          type: string
+          example: adminuser123
+          description: Username for which OTP needs to be resent
+      required:
+        - version
+        - journey
+        - operation
+        - userName
+      description: Model represents OTP resend request
+
+    ResendOtpData:
+      title: ResendOtpData
+      type: object
+      properties:
+        otpResent:
+          type: string
+          description: Indicates if OTP was resent successfully
+          enum:
+            - 'true'
+            - 'false'
+          example: 'true'
+        resendCount:
+          type: string
+          description: Number of times OTP has been resent
+          example: '1'
+        maxResendLimit:
+          type: string
+          description: Maximum number of resend attempts allowed
+          example: '3'
+        nextResendAvailableIn:
+          type: string
+          description: Time in seconds before next resend is allowed
+          example: '60'
+
+    ResendOtpResponseSchema:
+      title: ResendOtpResponseSchema
+      type: object
+      description: Resend OTP response
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          $ref: '#/components/schemas/ResendOtpData'
+
+    SendSmsRequest:
+      title: SendSmsRequest
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+          default: v1
+          description: This specifies which version of configuration to be used.
+        journey:
+          type: string
+          example: LOGIN
+          description: This defines the JOURNEY of the use case.
+        operation:
+          type: string
+          example: SEND_OTP_SMS
+          description: This defines the operation flow of use case.
+        language:
+          type: string
+          example: en
+          default: en
+          enum:
+            - en
+            - es
+          description: Specifies the preferred language by caller
+        msisdn:
+          type: string
+          example: '9876543210'
+          description: Mobile number to which SMS needs to be sent
+        message:
+          type: string
+          example: Your OTP for login is 1234. Valid for 5 minutes.
+          description: SMS message content
+        templateId:
+          type: string
+          example: OTP_LOGIN_TEMPLATE
+          description: SMS template identifier
+      required:
+        - version
+        - journey
+        - operation
+        - msisdn
+        - message
+      description: Model represents send SMS request
+
+    SendSmsData:
+      title: SendSmsData
+      type: object
+      properties:
+        smsSent:
+          type: string
+          description: Indicates if SMS was sent successfully
+          enum:
+            - 'true'
+            - 'false'
+          example: 'true'
+        messageId:
+          type: string
+          description: Unique identifier for the SMS message
+          example: sms-12345
+
+    SendSmsResponseSchema:
+      title: SendSmsResponseSchema
+      type: object
+      description: Send SMS response
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          $ref: '#/components/schemas/SendSmsData'
+
+    AuthenticateRequest:
+      title: AuthenticateRequest
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+          default: v1
+          description: This specifies which version of configuration to be used.
+        journey:
+          type: string
+          example: LOGIN
+          description: This defines the JOURNEY of the use case.
+        operation:
+          type: string
+          example: AUTHENTICATE
+          description: This defines the operation flow of use case.
+        language:
+          type: string
+          example: en
+          default: en
+          enum:
+            - en
+            - es
+          description: Specifies the preferred language by caller
+        userName:
+          type: string
+          example: adminuser123
+          description: Username entered by the admin user
+        password:
+          type: string
+          example: SecurePassword@123
+          description: Password entered by the admin user
+        otp:
+          type: string
+          example: '1234'
+          description: 4-digit OTP entered by user
+      required:
+        - version
+        - journey
+        - operation
+        - userName
+        - password
+        - otp
+      description: Model represents complete authentication request with username, password, and OTP
+
+    AuthenticateData:
+      title: AuthenticateData
+      type: object
+      properties:
+        authenticated:
+          type: string
+          description: Indicates if user is authenticated successfully
+          enum:
+            - 'true'
+            - 'false'
+          example: 'true'
+        sessionToken:
+          type: string
+          description: JWT session token for authenticated user
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyLTEyMzQ1In0
+        userId:
+          type: string
+          description: User identifier
+          example: user-12345
+        redirectUrl:
+          type: string
+          description: Landing page URL after successful login
+          example: /dashboard
+
+    AuthenticateResponseSchema:
+      title: AuthenticateResponseSchema
+      type: object
+      description: Authenticate response
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          $ref: '#/components/schemas/AuthenticateData'
+
+    ValidateUsernameRequest:
+      title: ValidateUsernameRequest
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+          default: v1
+          description: This specifies which version of configuration to be used.
+        journey:
+          type: string
+          example: FORGOT_PASSWORD
+          description: This defines the JOURNEY of the use case.
+        operation:
+          type: string
+          example: VALIDATE_USERNAME
+          description: This defines the operation flow of use case.
+        language:
+          type: string
+          example: en
+          default: en
+          enum:
+            - en
+            - es
+          description: Specifies the preferred language by caller
+        userName:
+          type: string
+          example: adminuser123
+          description: Username to validate for password reset
+      required:
+        - version
+        - journey
+        - operation
+        - userName
+      description: Model represents username validation request for password reset
+
+    ValidateUsernameData:
+      title: ValidateUsernameData
+      type: object
+      properties:
+        isValid:
+          type: string
+          description: Indicates if username exists in system
+          enum:
+            - 'true'
+            - 'false'
+          example: 'true'
+        userId:
+          type: string
+          description: User identifier
+          example: user-12345
+        msisdn:
+          type: string
+          description: Registered mobile number for OTP delivery
+          example: '9876543210'
+
+    ValidateUsernameResponseSchema:
+      title: ValidateUsernameResponseSchema
+      type: object
+      description: Validate Username response
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          $ref: '#/components/schemas/ValidateUsernameData'
+
+    ResetPasswordRequest:
+      title: ResetPasswordRequest
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+          default: v1
+          description: This specifies which version of configuration to be used.
+        journey:
+          type: string
+          example: FORGOT_PASSWORD
+          description: This defines the JOURNEY of the use case.
+        operation:
+          type: string
+          example: RESET_PASSWORD
+          description: This defines the operation flow of use case.
+        language:
+          type: string
+          example: en
+          default: en
+          enum:
+            - en
+            - es
+          description: Specifies the preferred language by caller
+        userName:
+          type: string
+          example: adminuser123
+          description: Username for which password needs to be reset
+        otp:
+          type: string
+          example: '1234'
+          description: 4-digit OTP for verification
+        newPassword:
+          type: string
+          example: NewSecurePass@456
+          description: New password entered by user
+        confirmPassword:
+          type: string
+          example: NewSecurePass@456
+          description: Confirm password to match new password
+      required:
+        - version
+        - journey
+        - operation
+        - userName
+        - otp
+        - newPassword
+        - confirmPassword
+      description: Model represents password reset request
+
+    ResetPasswordData:
+      title: ResetPasswordData
+      type: object
+      properties:
+        passwordReset:
+          type: string
+          description: Indicates if password was reset successfully
+          enum:
+            - 'true'
+            - 'false'
+          example: 'true'
+        message:
+          type: string
+          description: Confirmation message
+          example: Password reset successful. Please login with your new password.
+        redirectUrl:
+          type: string
+          description: URL to redirect user after successful password reset
+          example: /login
+
+    ResetPasswordResponseSchema:
+      title: ResetPasswordResponseSchema
+      type: object
+      description: Reset Password response
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          $ref: '#/components/schemas/ResetPasswordData'
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+      description: Error Response Model
+
+  parameters:
+    Correlation-Id:
+      name: Correlation-Id
+      in: header
+      required: true
+      schema:
+        type: string
+        example: 89318246-5802-42cc-8f3d-9232348cf64e
+      description: Correlation ID of the (Correlation ID for the ongoing journey, in case of direct/single API call without journey, correlation and transaction ID can share the same value)
+    Source:
+      name: Source
+      in: header
+      required: true
+      schema:
+        type: string
+        example: B2BPortal
+        enum:
+          - B2BPortal
+          - B2BIOS
+          - B2BAndroid
+      description: Mandatory attribute to identify the caller.
+    Language:
+      name: Language
+      in: header
+      required: false
+      schema:
+        type: string
+        enum:
+          - en
+          - es
+        example: en
+      description: Language selected by the user
+
+  responses:
+    ValidateCredentialsResponse:
+      description: Validate Credentials Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidateCredentialsResponseSchema'
+          examples:
+            Valid Credentials:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  isValid: 'true'
+                  userId: user-12345
+                  msisdn: '9876543210'
+            Invalid Credentials:
+              value:
+                status:
+                  code: API-460
+                  message: Invalid username or password
+                data:
+                  isValid: 'false'
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    AccountStatusResponse:
+      description: Account Status Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AccountStatusResponseSchema'
+          examples:
+            Active Account:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  status: ACTIVE
+                  userId: user-12345
+            Suspended Account:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  status: SUSPENDED
+                  userId: user-12345
+            Locked Account:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  status: LOCKED
+                  userId: user-12345
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    LockAccountResponse:
+      description: Lock Account Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LockAccountResponseSchema'
+          examples:
+            Account Locked:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  accountLocked: 'true'
+                  lockedUntil: '2026-04-01T12:00:00Z'
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    GenerateOtpResponse:
+      description: Generate OTP Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GenerateOtpResponseSchema'
+          examples:
+            OTP Generated:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  otpGenerated: 'true'
+                  otpId: otp-12345
+                  expiryTime: '300'
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    ValidateOtpResponse:
+      description: Validate OTP Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidateOtpResponseSchema'
+          examples:
+            Valid OTP:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  isValid: 'true'
+                  failedAttempts: '0'
+                  remainingAttempts: '3'
+            Invalid OTP:
+              value:
+                status:
+                  code: API-460
+                  message: Invalid OTP
+                data:
+                  isValid: 'false'
+                  failedAttempts: '1'
+                  remainingAttempts: '2'
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    ResendOtpResponse:
+      description: Resend OTP Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResendOtpResponseSchema'
+          examples:
+            OTP Resent:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  otpResent: 'true'
+                  resendCount: '1'
+                  maxResendLimit: '3'
+                  nextResendAvailableIn: '60'
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    SendSmsResponse:
+      description: Send SMS Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SendSmsResponseSchema'
+          examples:
+            SMS Sent:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  smsSent: 'true'
+                  messageId: sms-12345
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    AuthenticateResponse:
+      description: Authenticate Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AuthenticateResponseSchema'
+          examples:
+            Login Success:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  authenticated: 'true'
+                  sessionToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyLTEyMzQ1In0
+                  userId: user-12345
+                  redirectUrl: /dashboard
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    ValidateUsernameResponse:
+      description: Validate Username Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidateUsernameResponseSchema'
+          examples:
+            Valid Username:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  isValid: 'true'
+                  userId: user-12345
+                  msisdn: '9876543210'
+            Invalid Username:
+              value:
+                status:
+                  code: API-460
+                  message: Invalid username
+                data:
+                  isValid: 'false'
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    ResetPasswordResponse:
+      description: Reset Password Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResetPasswordResponseSchema'
+          examples:
+            Password Reset Success:
+              value:
+                status:
+                  code: API-000
+                  message: SUCCESS
+                data:
+                  passwordReset: 'true'
+                  message: Password reset successful. Please login with your new password.
+                  redirectUrl: /login
+            Password Mismatch:
+              value:
+                status:
+                  code: API-460
+                  message: New password and confirm password do not match
+                data:
+                  passwordReset: 'false'
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    400-Error-Response:
+      description: Bad Request. The server did not understand the request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            Invalid Input:
+              value:
+                status:
+                  code: API-400
+                  message: Invalid input
+            Missing Request Header:
+              value:
+                status:
+                  code: API-400_1
+                  message: Missing Request header
+            Missing Request Parameter:
+              value:
+                status:
+                  code: API-400_2
+                  message: Missing request parameters
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    401-Error-Response:
+      description: Unauthorized, it lacks valid authentication for the requested resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            Not Authenticated:
+              value:
+                status:
+                  code: API-401
+                  message: Not authenticated
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    403-Error-Response:
+      description: Forbidden. Access is forbidden to the requested resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            Not Authorized:
+              value:
+                status:
+                  code: API-403
+                  message: Not authorized
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    404-Error-Response:
+      description: Not Found. The server can not find the requested resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            Resource Not Found:
+              value:
+                status:
+                  code: API-404
+                  message: Resource Not found
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    460-Error-Response:
+      description: Business validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            Invalid Credentials:
+              value:
+                status:
+                  code: API-460
+                  message: Invalid username or password
+            Invalid Username:
+              value:
+                status:
+                  code: API-460
+                  message: Invalid username
+            Password Mismatch:
+              value:
+                status:
+                  code: API-460
+                  message: New password and confirm password do not match
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    460_1-Error-Response:
+      description: Business validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            Account Suspended:
+              value:
+                status:
+                  code: API-460_1
+                  message: Account is suspended
+            Invalid OTP:
+              value:
+                status:
+                  code: API-460_1
+                  message: Invalid OTP entered
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    460_2-Error-Response:
+      description: Business validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            Account Locked:
+              value:
+                status:
+                  code: API-460_2
+                  message: Account is locked due to multiple failed attempts
+            Resend Limit Exceeded:
+              value:
+                status:
+                  code: API-460_2
+                  message: Maximum OTP resend limit exceeded
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    460_3-Error-Response:
+      description: Business validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            OTP Expired:
+              value:
+                status:
+                  code: API-460_3
+                  message: OTP has expired
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    460_4-Error-Response:
+      description: Business validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            Password Policy Violation:
+              value:
+                status:
+                  code: API-460_4
+                  message: Password does not meet complexity requirements
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+    500-Error-Response:
+      description: Internal Server Error. The request was not completed. The server encountered an unexpected condition.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            Generic Exception:
+              value:
+                status:
+                  code: API-500
+                  message: Internal server error
+      headers:
+        Correlation-Id:
+          required: true
+          schema:
+            type: string
+            example: 89318246-5802-42cc-8f3d-9232348cf64e
+          description: Correlation ID for distributed tracing
+
+security:
+  - Authorization: []
+
+tags:
+  - name: User Management
+    description: APIs for user credential validation and account management
+  - name: OTP Management
+    description: APIs for OTP generation, validation, and resend operations
+  - name: Notification Management
+    description: APIs for sending SMS notifications
+  - name: Login Orchestration
+    description: Orchestration APIs for complete login flow
+  - name: Password Management
+    description: APIs for password reset and recovery operations

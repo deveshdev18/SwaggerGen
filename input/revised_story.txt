@@ -1,0 +1,18 @@
+User Story: 
+
+As an Admin user I must be able to update my password via Web and App.
+
+Acceptance Criteria:
+ 
+ - The Admin User can access a ""Change Password"" section in their profile settings on the Web Portal.
+ - The system prompts the Admin User to enter their current password.
+ - System displays appropriate error message if the user enters incorrect password.
+ - The system validates the current password.
+ - The system prompts the Admin User to enter a new password and confirm it.
+ - User will be notified with ""Password Mismatch"" error if the user is not providing the right inputs on the new/confirm password fields.
+ - The system validates the new password against password policy requirements.
+ - The system confirms that the new password and confirmation match.
+ - The system updates the Admin User password with the new password.
+ - The system provides a confirmation message upon successful password change.
+ - Admin user will be forced logout after password change from other devices or browsers(not current device).
+ - The Admin User can log in to the Web Portal and App using their new password."

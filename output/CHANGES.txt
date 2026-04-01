@@ -1,0 +1,70 @@
+Successfully merged revised user story into Swagger YAML file.
+
+ORIGINAL USER STORY:
+- Password Reset (Forgot Password) flow
+- User initiates reset via "Forgot Password" page
+- System validates username, sends OTP, allows password reset
+
+REVISED USER STORY:
+- Password Change (Profile Management) flow  
+- Authenticated user changes password in profile settings
+- User must provide current password for verification
+- User forced logout from other devices after successful change
+
+CHANGES MADE TO SWAGGER YAML:
+===============================
+
+1. NEW API ENDPOINT ADDED:
+   - Path: /password-mgmt/v1/change
+   - Method: POST
+   - Operation ID: changePassword
+   - Summary: Change Password
+   - Journey: PROFILE_MANAGEMENT
+   - DB Tables: USER_DETAILS, PASSWORD_HISTORY, USER_SESSION
+
+2. NEW REQUEST SCHEMA ADDED:
+   - ChangePasswordRequest
+     * version, journey, operation, language
+     * userName, currentPassword, newPassword, confirmPassword
+
+3. NEW RESPONSE SCHEMAS ADDED:
+   - ChangePasswordData
+     * passwordChanged (true/false)
+     * message
+     * sessionTerminated (true/false)
+   - ChangePasswordResponseSchema (wraps Status + ChangePasswordData)
+
+4. NEW RESPONSE DEFINITION ADDED:
+   - ChangePasswordResponse with examples:
+     * Password Change Success
+     * Password Mismatch
+     * Incorrect Current Password
+
+5. NEW ERROR CODE ADDED:
+   - 460_5-Error-Response: Incorrect current password
+   - Updated Status schema enum to include API-460_5
+
+GUIDELINES COMPLIANCE:
+======================
+✓ API URL uses lowercase with hyphen (/password-mgmt/v1/change)
+✓ OperationId is camelCase (changePassword)
+✓ Summary is short and clear
+✓ Multi-line description with Summary and DB Tables sections
+✓ Standard request/response structure with status + data objects
+✓ Request attributes in camelCase
+✓ Standard headers (Correlation-Id, Source, Language)
+✓ Response includes Correlation-Id header
+✓ Multiple examples provided with meaningful titles
+✓ Business validation errors categorized as 460, 460_1, etc.
+✓ Enum values use underscores (PROFILE_MANAGEMENT, CHANGE_PASSWORD)
+✓ OpenAPI 3.0.0 version maintained
+✓ All components properly referenced
+
+ORIGINAL SWAGGER PRESERVED:
+===========================
+✓ All existing endpoints unchanged
+✓ All existing schemas unchanged
+✓ All existing responses unchanged
+✓ Only new sections added for Change Password feature
+
+File saved to: C:\Users\devesh.dev\PycharmProjects\SwaggerGen\output\modified_swagger.yaml

@@ -1,0 +1,140 @@
+#,Guideline,Remarks /  Example
+1,Swagger naming convention should be as per the given micro-service,"E.g., Profile Management -> B2B_ProfileMgmt_v1.yml"
+2,Group the similar APIs logically and put in separate sections in the same Swagger file,"E.g.,
+Profile Management:
+/profile-mgmt/v1
+
+Account Management:
+/profile-mgmt/v1/account-mgmt
+/profile-mgmt/v1/account-mgmt/replace"
+3,Server URLs for all the envs are given,"servers:
+  - url: 'https://apidev/b2b' 
+    description: DEV
+  - url: 'https://apisit/b2b'
+    description: SIT
+  - url: 'https://apipreprod/b2b'
+    description: PREPROD
+  - url: 'https://api/b2b'
+    description: PROD"
+4,For each API,
+,Summary of the API should be simple and short,"E.g., Check if user name exists"
+,OperationId is in camelcase and is short in length (not too long),"E.g., checkUserName"
+,"API URLs must be lower case. Use hyphen for better readability if there are multi-word api names (e.g., /user-mgmt)","E.g.,
+/user-mgmt/v1/users/unblock"
+,"URL parameters in the URL (in: path) are provided correctly, though it is preferred to have request body instead of URL parameters for sensitive fields",
+,"Query parameters in the URL (in: query) are provided correctly, though it is preferred to have request body instead of query parameters for sensitive fields",
+,APIs having get functionality but with request payload will use POST method. Such API URLs to contain /get in the end. This is due to sensitive fields cannot be part of the URL,"E.g.,
+/line/v1/line-settings/get"
+,It is recommended not to place the API version at the end of the URL. If needed use /manage in the end,"Recommended:
+/short-cipher/v1/manage - PUT (update)
+/short-cipher/v1/manage - GET (read)"
+,Sensitive fields should not be used in URLs / query,"E.g., mobile no., account no etc."
+,Request attributes having enum should have the list of possible values for validation,"E.g.,
+country:
+          type: string
+          enum: [ ""IN"", ""US"", ""AE"", ""UK"" ]"
+,,
+,"Use string type for integer values. E.g., MSISDN (Mobile number), Code and Account numbers etc. should be used as string, instead of numeric types","Recommended:
+""msisdn"": ""8888888120"""
+,Use HTTP POST instead of DELETE due to security reasons,
+,"Description should be multi-line (clean) and needs to include
+- Summary
+- DB Table
+
+If ""DB Table"" section not applicable, remove the same","      description: |
+        **Summary:**
+
+        Caller will request to resend the OTP using this API. This API will re-generate the OTP and calls SMS GW API to deliver it to the user.
+
+        **DB Tables:**
+        - OTP_DETAILS"
+,"Response payload should be divided into ""status"" & ""data"" objects. ""data"" should be an object instead of direct string reference as per the example given","E.g.,
+{
+  ""status"": {
+    ""code"": ""200"",
+    ""sourceCode"": ""API-000"",
+    ""sourceMessage"": ""SUCCESS"",
+    ""help"": ""For more information please check API docs""
+  },
+  ""data"": {
+    ""amount"":""819.48"" 
+  }
+}"
+,Reuse of the request & response schema objects across multiple API definitions in the same swagger file,
+5,All APIs to have both request & response header blocks (parameters: & headers:) as below,"    Correlation-Id:
+      name: Correlation-Id
+      in: header
+      required: true
+      schema:
+        type: string
+        example: 89318246-5802-42cc-8f3d-9232348cf64e
+      description: Correlation ID of the (Correlation ID for the ongoing journey, in case of direct/single API call without journey, correlation and transaction ID can share the same value)
+    Source:
+      name: Source
+      in: header
+      required: true
+      schema:
+        type: string
+        example: ""B2BPortal, B2BIOS, B2BAndroid""
+      description: Mandatory attribute to identify the caller.
+    Language:
+      name: Language
+      in: header
+      required: false
+      schema:
+        type: string
+        enum: ['en', 'es']
+        example: en
+      description: Language selected by the user"
+6,Schema related guidelines are listed below:,
+,Use underscores/hyphen for enum / list types. Spaces should not be used,"E.g., API-400"
+,Request & response payload attributes should be camelCase,"E.g., userName, accountNumber"
+,Each swagger to have below schemas for Status object which will be part of response object,"    Status:
+      type: object
+      description: Model Represents Status
+      properties:
+        code:
+          type: string
+          description: Possible status code / error codes
+          enum:
+            - MAPI-400
+            - MAPI-000
+          example: API-400
+        message:
+          type: string
+          description: title of error message
+          example: Invalid input"
+,"Standard response structure for 200 should be as below.
+
+Standard Response Format (200)
+{
+ ""status"": {""code"": ""200"", ""message"": ""SUCCESS""},
+ ""data"": {object}
+}
+Must include:
+response header as Corelation-Id
+Example responses -> Response examples schema should be created in a separate section ""examples"" and inside API response structure, there should be a reference link. These e",
+7,"All requests and responses must have ""sample"" examples and should be visible in Swagger Editor","E.g.,
+Full Login:
+{
+  ""loginType"": ""FULL"",
+  ""attributes"": {
+    ""userName"": ""MyUser"",
+    ""password"": ""Abc@12345""
+  }
+}
+
+Quick Login:
+{
+  ""loginType"": ""QUICK"",
+  ""attributes"": {
+    ""msisdn"": ""1234567890""
+  }
+}"
+,"Title of the request / response examples in Swagger Editor should be meaningful. E.g., instead of keeping as example, example2 keep it as given","E.g.,
+BillingInfoResponse - Single
+BillingInfoResponse - Multiple"
+8,"Business validation errors should be categorized as (460). Make sure that 460-Error-Response has correct examples. Multiple business validation errors should be names as 460, 460_1, 460_2, 460_3",
+9,Ensure all the responses have the header (Correlation-Id),
+10,"For complex scenarios, the payload may be made extensible to handle futuristic usecases","E.g., ""extraInfo"": {""key-1"": ""value-1"", ""key-2"": ""value-2""}"
+12,"No need to use the error codes which normally is the responsibility of API GW (E.g., 405, 407, 413, 414, 429, 431, 502, 503, 504)",
